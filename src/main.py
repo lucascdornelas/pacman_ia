@@ -1,16 +1,16 @@
 import pygame
 
-# Defina as constantes do jogo
-WIDTH = 800
-HEIGHT = 800
-FPS = 60
-ENEMY_SPEED = 5
-
 # Cores
 from colors import BLACK, WHITE, RED, BLUE
 
 # Mapa
-from map import MAP, CELL_SIZE
+from map import MAP, CELL_SIZE, MAP_WIDTH, MAP_HEIGHT
+
+# Defina as constantes do jogo
+WIDTH = MAP_WIDTH * CELL_SIZE
+HEIGHT = MAP_HEIGHT * CELL_SIZE
+FPS = 60
+ENEMY_SPEED = 5
 
 # Classe para representar o personagens
 from character import Character
@@ -118,7 +118,9 @@ class Game:
                     enemy = Enemy(col, row, WHITE, self.player)
                     self.enemies.append(enemy)
                     self.all_sprites.add(enemy)
-
+        # o inimigo é lido antes do player
+        for _enemy in self.enemies:
+            enemy.player = self.player
         self.run()
 
 
