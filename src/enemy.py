@@ -12,17 +12,21 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = x * CELL_SIZE
         self.rect.y = y * CELL_SIZE
         self.player = player
+        self.color = color
 
     def update(self):
         # Utiliza a estratégia de busca A* para perseguir o jogador
         path = self.find_path_to_player()
-        print(path)
+        #print(path)
         if path:
             next_cell = path[0]
             next_x = next_cell[0] * CELL_SIZE
             next_y = next_cell[1] * CELL_SIZE
             self.rect.x = next_x
             self.rect.y = next_y
+
+    def render(self, g):
+        pygame.draw.rect(g, self.color, [self.rect.x, self.rect.y, CELL_SIZE, CELL_SIZE])
 
     def find_path_to_player(self):
         start = (self.rect.x // CELL_SIZE, self.rect.y // CELL_SIZE)

@@ -1,7 +1,7 @@
 import pygame
 
 # Cores
-from colors import BLACK, WHITE, RED, BLUE
+from colors import *
 
 # Mapa
 from map import MAP, CELL_SIZE, MAP_WIDTH, MAP_HEIGHT
@@ -17,6 +17,10 @@ from character import Character
 
 from enemy import Enemy
 
+from food import Food
+
+from wall import Wall
+
 
 # Classe principal do jogo
 class Game:
@@ -26,9 +30,11 @@ class Game:
         pygame.display.set_caption("Pac-Man")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.all_sprites = pygame.sprite.Group()
+        self.font = pygame.font.Font(pygame.font.get_default_font(), 24)
         self.player = None
         self.enemies = []
+        self.foods = []
+        self.walls = []
 
     def run(self):
         counter = 0
@@ -81,6 +87,24 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 self.controllerPlayer(event)
 
+    def collision(self):
+        # colisão com comidas
+        for comida in self.foods:
+            rect_player = pygame.Rect(self.player.rect.x, self.player.rect.y, CELL_SIZE, CELL_SIZE)
+            rect_comida = pygame.Rect(comida.x, comida.y, comida.size, comida.size)
+            if rect_player.colliderect(rect_comida):
+                self.player.points += 1
+                self.foods.remove(comida)
+
+
+        # colisão com os inimigos
+        for inimigos in self.enemies:
+            rect_player = pygame.Rect(self.player.rect.x, self.player.rect.y, CELL_SIZE, CELL_SIZE)
+            rect_inimigos = pygame.Rect(inimigos.rect.x, inimigos.rect.y, CELL_SIZE, CELL_SIZE)
+            if rect_player.colliderect(rect_inimigos):
+                self.running = False
+
+
     def update(self, counter):
         counter = counter % 30
 
@@ -89,22 +113,25 @@ class Game:
                 enemy.update()
         
         self.player.update()
+        self.collision()
 
 
     def draw(self):
         self.screen.fill(BLACK)
         # Desenhe o mapa
-        for row in range(len(MAP)):
-            for col in range(len(MAP[row])):
-                cell_type = MAP[row][col]
-                color = BLUE if cell_type == 1 else BLACK
-                pygame.draw.rect(
-                    self.screen,
-                    color,
-                    (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE),
-                )
-
-        self.all_sprites.draw(self.screen)
+        # renderiza todas as entidades do jogo
+        for parede in self.walls:
+            parede.render(self.screen)
+        # renderiza todas os inimigos do jogo
+        for comida in self.foods:
+            comida.render(self.screen)
+        # renderiza todas os inimigos do jogo
+        for inimigos in self.enemies:
+            inimigos.render(self.screen)
+        # renderiza o player
+        self.player.render(self.screen)
+        # renderiza UI
+        self.screen.blit(self.font.render("Pontos: " + str(self.player.points), True, GREEN), (10,10))
         pygame.display.flip()
 
     def start(self):
@@ -112,15 +139,19 @@ class Game:
             for col in range(len(MAP[row])):
                 cell_type = MAP[row][col]
                 if cell_type == 2:
-                    self.player = Character(col, row, RED)
-                    self.all_sprites.add(self.player)
+                    self.player = Character(col, row, YELLOW)
                 elif cell_type == 3:
-                    enemy = Enemy(col, row, WHITE, self.player)
+                    enemy = Enemy(col, row, RED, self.player)
                     self.enemies.append(enemy)
-                    self.all_sprites.add(enemy)
+                elif cell_type == 1:
+                    wall = Wall(col, row, BLUE)
+                    self.walls.append(wall)
+                elif cell_type == 4:
+                    _food = Food(col, row, int(CELL_SIZE/8), WHITE)
+                    self.foods.append(_food)
         # o inimigo é lido antes do player
         for _enemy in self.enemies:
-            enemy.player = self.player
+            _enemy.player = self.player
         self.run()
 
 

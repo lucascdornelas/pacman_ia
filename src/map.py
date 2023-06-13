@@ -18,6 +18,8 @@ def getMatriz(mapa):
                 linha.append(2)
             elif mapa[(_y*19)+_x] == 3:
                 linha.append(3)
+            elif mapa[(_y*19)+_x] == 1:
+                linha.append(4)
             else:
                 linha.append(0)
         mapa_matriz.append(linha)
