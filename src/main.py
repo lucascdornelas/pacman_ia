@@ -11,6 +11,13 @@ WIDTH = MAP_WIDTH * CELL_SIZE
 HEIGHT = MAP_HEIGHT * CELL_SIZE
 FPS = 60
 ENEMY_SPEED = 5
+#estados
+ESTADO_MENU = "menu"
+ESTADO_PAUSE = "pause"
+ESTADO_GAME = "game"
+ESTADO_GAMEOVER = "gameover"
+ESTADO_VICTORY = "victory"
+
 
 # Classe para representar o personagens
 from character import Character
@@ -20,6 +27,8 @@ from enemy import Enemy
 from food import Food
 
 from wall import Wall
+
+from layer import *
 
 
 # Classe principal do jogo
@@ -35,6 +44,11 @@ class Game:
         self.enemies = []
         self.foods = []
         self.walls = []
+        self.estado = ESTADO_MENU
+        self.menu = Menu()
+        self.pause = Pause()
+        self.victory = Victory()
+        self.gameover = GameOver()
 
     def run(self):
         counter = 0
@@ -85,9 +99,19 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                self.controllerPlayer(event)
+                if self.estado == ESTADO_GAME:
+                    self.controllerPlayer(event)
+                    if event.key == pygame.K_ESCAPE:
+                        self.estado = ESTADO_PAUSE
+                elif self.estado == ESTADO_PAUSE:
+                    if event.key == pygame.K_ESCAPE:
+                        self.estado = ESTADO_GAME
 
     def collision(self):
+        # checa se as comidas acabaram
+        if len(self.foods) == 0:
+            self.estado = ESTADO_VICTORY
+
         # colisão com comidas
         for comida in self.foods:
             rect_player = pygame.Rect(self.player.rect.x, self.player.rect.y, CELL_SIZE, CELL_SIZE)
@@ -96,43 +120,104 @@ class Game:
                 self.player.points += 1
                 self.foods.remove(comida)
 
-
         # colisão com os inimigos
         for inimigos in self.enemies:
             rect_player = pygame.Rect(self.player.rect.x, self.player.rect.y, CELL_SIZE, CELL_SIZE)
             rect_inimigos = pygame.Rect(inimigos.rect.x, inimigos.rect.y, CELL_SIZE, CELL_SIZE)
             if rect_player.colliderect(rect_inimigos):
-                self.running = False
+                self.estado = ESTADO_GAMEOVER
 
 
     def update(self, counter):
-        counter = counter % 30
+        if self.estado == ESTADO_GAME:
+            counter = counter % 30
 
-        if counter == 0:
-            for enemy in self.enemies:
-                enemy.update()
-        
-        self.player.update()
-        self.collision()
+            if counter == 0:
+                for enemy in self.enemies:
+                    enemy.update()
+            
+            self.player.update()
+            self.collision()
+        elif self.estado == ESTADO_MENU:
+            _option = self.menu.update()
+            if _option == 0:
+                game.restart()
+            elif _option == 2:
+                self.running = False
+        elif self.estado == ESTADO_PAUSE:
+            _option = self.pause.update()
+            if _option == 0:
+                self.pause.choice = -1
+                self.estado = ESTADO_GAME
+            elif _option == 1:
+                game.restart()
+            elif _option == 2:
+                self.estado = ESTADO_MENU
+        elif self.estado == ESTADO_VICTORY:
+            _option = self.victory.update()
+            if _option == 1:
+                self.estado = ESTADO_MENU
+        elif self.estado == ESTADO_GAMEOVER:
+            _option = self.gameover.update()
+            if _option == 1:
+                self.estado = ESTADO_MENU
+            elif _option == 2:
+                game.restart()
 
 
     def draw(self):
-        self.screen.fill(BLACK)
-        # Desenhe o mapa
-        # renderiza todas as entidades do jogo
-        for parede in self.walls:
-            parede.render(self.screen)
-        # renderiza todas os inimigos do jogo
-        for comida in self.foods:
-            comida.render(self.screen)
-        # renderiza todas os inimigos do jogo
-        for inimigos in self.enemies:
-            inimigos.render(self.screen)
-        # renderiza o player
-        self.player.render(self.screen)
-        # renderiza UI
-        self.screen.blit(self.font.render("Pontos: " + str(self.player.points), True, GREEN), (10,10))
+        if self.estado == ESTADO_GAME:
+            self.screen.fill(BLACK)
+            # Desenhe o mapa
+            # renderiza todas as entidades do jogo
+            for parede in self.walls:
+                parede.render(self.screen)
+            # renderiza todas os inimigos do jogo
+            for comida in self.foods:
+                comida.render(self.screen)
+            # renderiza todas os inimigos do jogo
+            for inimigos in self.enemies:
+                inimigos.render(self.screen)
+            # renderiza o player
+            self.player.render(self.screen)
+            # renderiza UI
+            self.screen.blit(self.font.render("Pontos: " + str(self.player.points), True, GREEN), (10,10))
+        elif self.estado == ESTADO_MENU:
+            self.menu.render(self.screen, ((WIDTH/2)-100, (HEIGHT/2) - 100))
+        elif self.estado == ESTADO_PAUSE:
+            self.pause.render(self.screen, ((WIDTH/2)-75, (HEIGHT/2) - 100))
+        elif self.estado == ESTADO_VICTORY:
+            self.victory.render(self.screen, ((WIDTH/2)-100, (HEIGHT/2) - 100), self.player.points)
+        elif self.estado == ESTADO_GAMEOVER:
+            self.gameover.render(self.screen, ((WIDTH/2)-100, (HEIGHT/2) - 100), self.player.points)
+
         pygame.display.flip()
+
+    def restart(self):
+        self.menu.choice = -1
+        self.pause.choice = -1
+        self.enemies = []
+        self.foods = []
+        self.walls = []
+        self.player = None
+        for row in range(len(MAP)):
+            for col in range(len(MAP[row])):
+                cell_type = MAP[row][col]
+                if cell_type == 2:
+                    self.player = Character(col, row, YELLOW)
+                elif cell_type == 3:
+                    enemy = Enemy(col, row, RED, self.player)
+                    self.enemies.append(enemy)
+                elif cell_type == 1:
+                    wall = Wall(col, row, BLUE)
+                    self.walls.append(wall)
+                elif cell_type == 4:
+                    _food = Food(col, row, int(CELL_SIZE/8), WHITE)
+                    self.foods.append(_food)
+        # o inimigo é lido antes do player
+        for _enemy in self.enemies:
+            _enemy.player = self.player
+        self.estado = ESTADO_GAME
 
     def start(self):
         for row in range(len(MAP)):
