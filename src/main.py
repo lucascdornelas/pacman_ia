@@ -62,6 +62,7 @@ class Game:
 
     def controllerPlayer(self, event):
         if event.key == pygame.K_LEFT:
+            self.player.direcao = 1
             new_x = self.player.rect.x - CELL_SIZE
             if (
                 self.player.rect.x > 0
@@ -71,6 +72,7 @@ class Game:
             elif self.player.rect.x == 0:
                 self.player.rect.x = WIDTH - CELL_SIZE
         elif event.key == pygame.K_RIGHT:
+            self.player.direcao = 0
             new_x = self.player.rect.x + CELL_SIZE
             if (
                 self.player.rect.x < WIDTH - CELL_SIZE
@@ -80,6 +82,7 @@ class Game:
             elif self.player.rect.x == WIDTH - CELL_SIZE:
                 self.player.rect.x = 0
         elif event.key == pygame.K_UP:
+            self.player.direcao = 2
             new_y = self.player.rect.y - CELL_SIZE
             if (
                 self.player.rect.y > 0
@@ -87,6 +90,7 @@ class Game:
             ):
                 self.player.rect.y = new_y
         elif event.key == pygame.K_DOWN:
+            self.player.direcao = 3
             new_y = self.player.rect.y + CELL_SIZE
             if (
                 self.player.rect.y < HEIGHT - CELL_SIZE
@@ -142,7 +146,7 @@ class Game:
             _option = self.menu.update()
             if _option == 0:
                 game.restart()
-            elif _option == 2:
+            elif _option == 1:
                 self.running = False
         elif self.estado == ESTADO_PAUSE:
             _option = self.pause.update()

@@ -1,7 +1,7 @@
 import pygame
 from heapq import *
-
 from map import MAP, CELL_SIZE
+from spritesheet import SpriteSheet
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, color, player):
@@ -13,6 +13,17 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y = y * CELL_SIZE
         self.player = player
         self.color = color
+        self.spritesheet = SpriteSheet(pygame.image.load("imagens/sprites_fantasma.png"), 16, 16, CELL_SIZE / 16)
+        self.count = 0
+        self.count_max = 1
+        self.frame = 0
+        self.scale = (CELL_SIZE / 16)
+        self.eye_size = (CELL_SIZE / 16) * 2
+        self.eye_center_pos_x = [self.scale * 4, self.scale * 10]
+        self.eye_center_pos_y = self.scale * 7
+        self.eye_pos_x = [0, 0]
+        self.eye_pos_y = 0
+        self.eye_range = 3
 
     def update(self):
         # Utiliza a estratégia de busca A* para perseguir o jogador
@@ -25,8 +36,26 @@ class Enemy(pygame.sprite.Sprite):
             self.rect.x = next_x
             self.rect.y = next_y
 
+        # atualiza sprite
+        self.count += 1
+        if self.count >= self.count_max:
+            self.count = 0
+            if self.frame % 2 == 0:
+                self.frame += 1
+            else:
+                self.frame -= 1
+            self.change_eye_position()
+
     def render(self, g):
-        pygame.draw.rect(g, self.color, [self.rect.x, self.rect.y, CELL_SIZE, CELL_SIZE])
+        #pygame.draw.rect(g, self.color, [self.rect.x, self.rect.y, CELL_SIZE, CELL_SIZE])
+        _imagem = self.spritesheet.get_image(self.frame)
+        g.blit(_imagem, (self.rect.x, self.rect.y))
+        # desenha a posição do olho
+        eye_x_0 = self.rect.x + self.eye_pos_x[0] + self.eye_center_pos_x[0]
+        eye_x_1 = self.rect.x + self.eye_pos_x[1] + self.eye_center_pos_x[1]
+        eye_y = self.rect.y + self.eye_pos_y + self.eye_center_pos_y
+        pygame.draw.rect(g, (0,0,255), [eye_x_0, eye_y, self.eye_size, self.eye_size])
+        pygame.draw.rect(g, (0,0,255), [eye_x_1, eye_y, self.eye_size, self.eye_size])
 
     def find_path_to_player(self):
         start = (self.rect.x // CELL_SIZE, self.rect.y // CELL_SIZE)
@@ -66,3 +95,25 @@ class Enemy(pygame.sprite.Sprite):
         x1, y1 = node
         x2, y2 = goal
         return abs(x1 - x2) + abs(y1 - y2)
+    
+    def change_eye_position(self):
+        _x =  self.player.rect.x - self.rect.x
+        _y =  self.player.rect.y - self.rect.y
+        # posição x dos olhos 
+        if _x < 0:
+            self.eye_pos_x[0] = -self.eye_range
+            self.eye_pos_x[1] = -self.eye_range
+        elif _x > 0:
+            self.eye_pos_x[0] = self.eye_range
+            self.eye_pos_x[1] = self.eye_range
+        else:
+            self.eye_pos_x[0] = 0
+            self.eye_pos_x[1] = 0
+        
+        # posição y dos olhos
+        if _y < 0:
+            self.eye_pos_y = -self.eye_range
+        elif _y > 0:
+            self.eye_pos_y = self.eye_range
+        else:
+            self.eye_pos_y = 0

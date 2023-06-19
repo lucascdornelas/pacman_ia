@@ -2,7 +2,7 @@ import pygame
 
 class Menu():
     def __init__(self) -> None:
-        self.option = ["JOGAR", "CRÉDITOS", "SAIR"]
+        self.option = ["JOGAR", "SAIR"]
         self.index = 0
         self.font_title = pygame.font.Font(pygame.font.get_default_font(), 42)
         self.font_option = pygame.font.Font(pygame.font.get_default_font(), 24)
