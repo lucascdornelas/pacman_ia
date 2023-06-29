@@ -28,7 +28,7 @@ class Enemy(pygame.sprite.Sprite):
     def update(self):
         # Utiliza a estratégia de busca A* para perseguir o jogador
         path = self.find_path_to_player()
-        #print(path)
+
         if path:
             next_cell = path[0]
             next_x = next_cell[0] * CELL_SIZE
@@ -47,24 +47,26 @@ class Enemy(pygame.sprite.Sprite):
             self.change_eye_position()
 
     def render(self, g):
-        #pygame.draw.rect(g, self.color, [self.rect.x, self.rect.y, CELL_SIZE, CELL_SIZE])
         _imagem = self.spritesheet.get_image(self.frame)
         g.blit(_imagem, (self.rect.x, self.rect.y))
-        # desenha a posição do olho
+
         eye_x_0 = self.rect.x + self.eye_pos_x[0] + self.eye_center_pos_x[0]
         eye_x_1 = self.rect.x + self.eye_pos_x[1] + self.eye_center_pos_x[1]
         eye_y = self.rect.y + self.eye_pos_y + self.eye_center_pos_y
         pygame.draw.rect(g, (0,0,255), [eye_x_0, eye_y, self.eye_size, self.eye_size])
         pygame.draw.rect(g, (0,0,255), [eye_x_1, eye_y, self.eye_size, self.eye_size])
 
+    # Implementação do algoritmo A* para encontrar o caminho até o jogador
     def find_path_to_player(self):
+        # posição inicial (inimigo), posição final (pacman)
         start = (self.rect.x // CELL_SIZE, self.rect.y // CELL_SIZE)
         end = (self.player.rect.x // CELL_SIZE, self.player.rect.y // CELL_SIZE)
-        # Implemente o algoritmo A* para encontrar o caminho até o jogador
-        # Aqui está uma implementação básica para ajudar você a começar:
+        
         open_list = []
-        closed_set = set()
+        closed_set = set() 
+
         heappush(open_list, (0, start, []))
+
         while open_list:
             current_cost, current_node, current_path = heappop(open_list)
             if current_node == end:

@@ -1,13 +1,12 @@
 from PIL import Image
 
-# retorna os pixels de uma imagem
 def getImagePixels():
     imagem = Image.open("imagens/mapa.png","r")
     pix_val = list(imagem.getdata())
     return pix_val, imagem.width, imagem.height
 
 def getMatriz(mapa):
-    # gera matriz do mapa
+
     mapa_matriz = []
     for _y in range(0,15):
         linha = []

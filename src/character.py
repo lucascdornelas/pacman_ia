@@ -29,7 +29,6 @@ class Character(pygame.sprite.Sprite):
                 self.frame -= 1
 
     def render(self, g):
-        #pygame.draw.rect(g, self.color, [self.rect.x, self.rect.y, CELL_SIZE, CELL_SIZE])
         _imagem = self.spritesheet.get_image(self.frame+(self.direcao*2))
         g.blit(_imagem, (self.rect.x, self.rect.y))
 

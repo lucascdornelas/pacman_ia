@@ -12,7 +12,6 @@ class Menu():
         self.comand = False
 
     def update(self):
-        # tem de soltar a tecla para dar o proximo comando
         comand = pygame.key.get_pressed()
         if self.comand != comand:
             if comand[pygame.K_UP]:
@@ -49,7 +48,6 @@ class Pause():
         self.comand = False
 
     def update(self):
-        # tem de soltar a tecla para dar o proximo comando
         comand = pygame.key.get_pressed()
         if self.comand != comand:
             if comand[pygame.K_UP]:

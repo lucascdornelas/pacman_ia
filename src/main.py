@@ -172,20 +172,19 @@ class Game:
     def draw(self):
         if self.estado == ESTADO_GAME:
             self.screen.fill(BLACK)
-            # Desenhe o mapa
-            # renderiza todas as entidades do jogo
+
             for parede in self.walls:
                 parede.render(self.screen)
-            # renderiza todas os inimigos do jogo
             for comida in self.foods:
                 comida.render(self.screen)
-            # renderiza todas os inimigos do jogo
+
             for inimigos in self.enemies:
                 inimigos.render(self.screen)
-            # renderiza o player
+
             self.player.render(self.screen)
-            # renderiza UI
+
             self.screen.blit(self.font.render("Pontos: " + str(self.player.points), True, GREEN), (10,10))
+
         elif self.estado == ESTADO_MENU:
             self.menu.render(self.screen, ((WIDTH/2)-100, (HEIGHT/2) - 100))
         elif self.estado == ESTADO_PAUSE:
@@ -218,6 +217,7 @@ class Game:
                 elif cell_type == 4:
                     _food = Food(col, row, int(CELL_SIZE/8), WHITE)
                     self.foods.append(_food)
+
         # o inimigo é lido antes do player
         for _enemy in self.enemies:
             _enemy.player = self.player
